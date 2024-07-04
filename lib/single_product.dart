@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:studentapp/cart.dart';
+import 'package:studentapp/dummydata.dart';
 
 class SingleProduct extends StatelessWidget {
   const SingleProduct({super.key, required this.singleProduct});
@@ -9,11 +11,19 @@ class SingleProduct extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: const [
-          Padding(
+        actions: [
+          const Padding(
             padding: EdgeInsets.only(right: 20.0),
             child: Icon(Icons.favorite_outline),
-          )
+          ),
+          IconButton(
+                onPressed: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) {
+                    return Cart();
+                  }));
+                },
+                icon: const Icon(Icons.shopping_cart)),
         ],
       ),
       body: Padding(
@@ -34,9 +44,12 @@ class SingleProduct extends StatelessWidget {
                 style: const TextStyle(fontSize: 16),
               ),
             ),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text('Add to Cart'),
+            MaterialButton(
+              color: Colors.green,
+              onPressed: () {
+                cartList.add(singleProduct);
+              },
+              child: const Text('Add to Cart', style: TextStyle(color: Colors.white),),
             )
           ],
         ),

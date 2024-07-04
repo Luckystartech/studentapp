@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:studentapp/cart.dart';
 import 'package:studentapp/dummydata.dart';
 import 'package:studentapp/single_product.dart';
-import 'package:studentapp/widgets.dart/product_grid_widget.dart';
+import 'package:studentapp/widgets.dart/my_text_widget.dart';
+import 'package:studentapp/widgets.dart/product_card_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,6 +25,15 @@ late String selectedCategory = categories[0];
 
 List<Map<String, dynamic>> categorisedList = productsList;
 
+// Add to Cart
+void addToCart(Map<String, dynamic> product) {
+  if (cartList.contains(product)) {
+    cartList.remove(product);
+  } else {
+    cartList.add(product);
+  }
+}
+
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
@@ -34,10 +46,26 @@ class _HomePageState extends State<HomePage> {
             child: Text('L'),
           ),
         ),
-        actions: const [
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.shopping_cart),
+            padding: const EdgeInsets.only(right: 20.0),
+            child: Stack(children: [
+              Positioned(
+                  left: 10,
+                  child: Text(
+                    cartList.length.toString(),
+                    style: const TextStyle(
+                        color: Colors.red, fontWeight: FontWeight.bold),
+                  )),
+              IconButton(
+                  onPressed: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return Cart();
+                    }));
+                  },
+                  icon: const Icon(Icons.shopping_cart)),
+            ]),
           )
         ],
       ),
@@ -52,17 +80,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               height: 20,
             ),
-            Container(
-              decoration: BoxDecoration(
-                  border: Border.all(width: 1),
-                  borderRadius: BorderRadius.circular(10)),
-              child: const TextField(
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                  hintText: 'Search furniture',
-                ),
-              ),
-            ),
+            const MyTextField(hintText: 'search furniture',),
             const SizedBox(
               height: 20,
             ),
@@ -81,8 +99,7 @@ class _HomePageState extends State<HomePage> {
                               ? productsList
                               : productsList
                                   .where((product) =>
-                                      product['category'] ==
-                                      categories[index])
+                                      product['category'] == categories[index])
                                   .toList();
                           print(selectedCategory);
                         });
@@ -115,9 +132,36 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 20),
             // Product Section
             Expanded(
-                child: ProductGridWidget(
-              products: categorisedList,
-            ))
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 8.0,
+                  mainAxisExtent: 250,
+                ),
+                itemCount: categorisedList.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(builder: (context) {
+                        return SingleProduct(
+                          singleProduct: categorisedList[index],
+                        );
+                      }));
+                    },
+                    child: ProductCardWidget(
+                      product: categorisedList[index],
+                      onPressed: () {
+                        setState(() {
+                          addToCart(categorisedList[index]);
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
+            )
           ],
         ),
       ),

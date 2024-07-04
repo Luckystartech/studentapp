@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:studentapp/homepage.dart';
+import 'package:studentapp/navigation.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // home: const HomePage(),
-      home: const HomePage(),
+      home: const MyNavigationBar(),
     );
   }
 }

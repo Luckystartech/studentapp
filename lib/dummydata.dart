@@ -207,8 +207,7 @@ final List<Map<String, dynamic>> productsList = [
   }
 ];
 
-final menClothing = productsList
-    .where((product) => product['category'] == 'men\'s clothing')
-    .toList();
-
-
+// final menClothing = productsList
+//     .where((product) => product['category'] == 'men\'s clothing')
+//     .toList();
+final List<Map<String, dynamic>> cartList = [];
