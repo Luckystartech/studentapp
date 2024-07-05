@@ -1,4 +1,8 @@
-final List<Map<String, dynamic>> productsList = [
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+List<Map<String, dynamic>> productsList = [
   {
     "id": 1,
     "title": "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops",
@@ -207,8 +211,16 @@ final List<Map<String, dynamic>> productsList = [
   }
 ];
 
-final menClothing = productsList
-    .where((product) => product['category'] == 'men\'s clothing')
-    .toList();
+// final menClothing = productsList
+//     .where((product) => product['category'] == 'men\'s clothing')
+//     .toList();
 
+List<Map<String, dynamic>> cartList = [];
 
+List<String> categories = [
+  'All',
+  'men\'s clothing',
+  'jewelery',
+  'electronics',
+  'women\'s clothing'
+];

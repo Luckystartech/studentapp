@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:studentapp/cart.dart';
 import 'package:studentapp/dummydata.dart';
 import 'package:studentapp/single_product.dart';
-import 'package:studentapp/widgets.dart/product_grid_widget.dart';
+import 'package:studentapp/widgets.dart/product_card_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,19 +14,48 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-List<String> categories = [
-  'All',
-  'men\'s clothing',
-  'jewelery',
-  'electronics',
-  'women\'s clothing'
-];
-
-late String selectedCategory = categories[0];
-
-List<Map<String, dynamic>> categorisedList = productsList;
+List<Map<String, dynamic>> allProducts = [];
 
 class _HomePageState extends State<HomePage> {
+  String selectedCategory = categories[0];
+
+  @override
+  void initState() {
+    loadData();
+    if (allProducts.isEmpty) {
+      allProducts = productsList;
+    } else {
+      loadData();
+    }
+
+    super.initState();
+  }
+
+  // load Data from cache
+  Future<void> loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? productString = prefs.getStringList('myProducts');
+    if (productString != null) {
+      setState(() {
+        allProducts = productString
+            .map((eachProductString) => jsonDecode(eachProductString))
+            .toList()
+            .cast<Map<String, dynamic>>();
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> categorisedList = allProducts;
+
+  // Add to Cart or remove from cart
+  void addToCart(Map<String, dynamic> product) {
+    if (cartList.contains(product)) {
+      cartList.remove(product);
+    } else {
+      cartList.add(product);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,11 +67,29 @@ class _HomePageState extends State<HomePage> {
             child: Text('L'),
           ),
         ),
-        actions: const [
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.shopping_cart),
-          )
+              padding: const EdgeInsets.only(right: 20.0),
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 6,
+                    child: Text(
+                      cartList.length.toString(),
+                      style: const TextStyle(
+                          color: Colors.red, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                      onPressed: () {
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (context) {
+                          return const Cart();
+                        }));
+                      },
+                      icon: const Icon(Icons.shopping_cart)),
+                ],
+              ))
         ],
       ),
       body: Padding(
@@ -78,11 +129,10 @@ class _HomePageState extends State<HomePage> {
                         setState(() {
                           selectedCategory = categories[index];
                           categorisedList = selectedCategory == categories[0]
-                              ? productsList
-                              : productsList
+                              ? allProducts
+                              : allProducts
                                   .where((product) =>
-                                      product['category'] ==
-                                      categories[index])
+                                      product['category'] == categories[index])
                                   .toList();
                           print(selectedCategory);
                         });
@@ -115,9 +165,43 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 20),
             // Product Section
             Expanded(
-                child: ProductGridWidget(
-              products: categorisedList,
-            ))
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 8.0,
+                  mainAxisExtent: 250,
+                ),
+                itemCount: selectedCategory == categories[0]
+                    ? allProducts.length
+                    : categorisedList.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(builder: (context) {
+                        return SingleProduct(
+                          singleProduct: selectedCategory == categories[0]
+                              ? allProducts[index]
+                              : categorisedList[index],
+                        );
+                      }));
+                    },
+                    child: ProductCardWidget(
+                        product: selectedCategory == categories[0]
+                            ? allProducts[index]
+                            : categorisedList[index],
+                        onPressed: () {
+                          setState(() {
+                            addToCart(selectedCategory == categories[0]
+                                ? allProducts[index]
+                                : categorisedList[index]);
+                          });
+                        }),
+                  );
+                },
+              ),
+            )
           ],
         ),
       ),
